@@ -1,9 +1,9 @@
 __author__ = 'feeder'
 
 import pymqi
-import MQMessage
+from MQMessage import MQMessage
 
-class mqConnector:
+class MQConnector:
 
     def __init__(self, queue_manager, channel, host, port, *args):
         self.queue_manager_name = queue_manager
@@ -20,7 +20,7 @@ class mqConnector:
         self.queues[queue_name] = queue
 
     def connect(self):
-        self.manager = pymqi.connect(self.queue_manager, self.channel, self.conn_info)
+        self.manager = pymqi.connect(self.queue_manager_name, self.channel_name, self.conn_info)
         for queue in self.queues_list:
             self._add_queue(queue)
 
@@ -29,7 +29,7 @@ class mqConnector:
 
     def receive_message(self, queue_name):
         message = MQMessage()
-        message.message_string = self.queue_dict[queue_name].get(None, message.message_descriptor, message.message_gmo)
+        message.message_string = self.queues[queue_name].get(None, message.message_descriptor, message.gmo)
         message.reset()
         return message
 
