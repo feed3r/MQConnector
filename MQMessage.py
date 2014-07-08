@@ -23,4 +23,5 @@ class MQMessage(object):
     def set_defaults(self):
         self.gmo = pymqi.GMO()
         self.gmo.Options = CMQC.MQGMO_WAIT | CMQC.MQGMO_FAIL_IF_QUIESCING
-        self.gmo.WaitInterval = CMQC.MQWI_UNLIMITED # Unlimited expiration of queue
+        #self.gmo.WaitInterval = CMQC.MQWI_UNLIMITED # Unlimited expiration of queue
+        self.gmo.WaitInterval = 5000 # 5 Seconds

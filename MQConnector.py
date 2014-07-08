@@ -1,6 +1,7 @@
 __author__ = 'feeder'
 
 import pymqi
+import CMQC
 from MQMessage import MQMessage
 
 class MQConnector:
@@ -34,12 +35,19 @@ class MQConnector:
         return message
 
     def _close_queue(self, queue):
-        queue.close()
-        queue.disconnect()
+        try:
+            queue.close()
+        except pymqi.Error:
+            pass
+
+
+    def disconnect(self):
+        if (self.manager):
+            self.manager.disconnect()
+
 
     def close_all_queues(self):
         for queue_name, queue in self.queues.items():
-            print("Closing Queue " + queue_name)
             self._close_queue(queue)
 
 

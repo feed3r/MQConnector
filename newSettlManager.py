@@ -2,8 +2,11 @@ __author__ = 'feeder'
 
 from MQConnector import MQConnector
 from MQMessage import MQMessage
+import pymqi
+import CMQC
 
 import os
+import sys
 
 queue_manager = "QM_giorgio"
 channel = "S_giorgio"
@@ -28,37 +31,52 @@ message_to_send_out_file = open('msgJuly02.txt', 'r')
 settl_info = input_settl_file.readline()
 
 connector = MQConnector(queue_manager, channel, host, port, in_queue_name, out_queue_name)
-connector.connect()
+
+try:
+    connector.connect()
+except pymqi.MQMIError, e:
+    connector.disconnect()
 
 keep_running = True
 
-#Init Messages: output message
-output_message = MQMessage()
-output_message.set_defaults()
 
-#while (keep_running):
+while (keep_running):
 
-#Receive the message
-message_recvd = connector.receive_message(in_queue_name)
+    try:
+        #Receive the message
+        message_recvd = connector.receive_message(in_queue_name)
 
-input_msg_string = message_recvd.message_string
+        input_msg_string = message_recvd.message_string
 
-print("Here's the message: ", input_msg_string)
+        print("Here's the message: ", input_msg_string)
 
-message_header = input_msg_string[:150]
-input_header = input_msg_string[:26] + susp_flag
-input_header += input_msg_string[27:110:]
-input_out_copy = input_msg_string[150:550:]
-header_file.write(message_header + os.linesep)
-message_string = input_header + input_out_copy + settl_info
-input_file.write(message_string + os.linesep)
+        message_header = input_msg_string[:150]
+        input_header = input_msg_string[:26] + susp_flag
+        input_header += input_msg_string[27:110:]
+        input_out_copy = input_msg_string[150:550:]
+        header_file.write(message_header + os.linesep)
+        message_string = input_header + input_out_copy + settl_info
+        input_file.write(message_string + os.linesep)
 
-#Writing the response message
-print("Writing the response: ", message_string)
-output_message.message_string = message_string
-connector.send_message(out_queue_name, output_message)
+        #Init Messages: output message
+        output_message = MQMessage()
+        output_message.set_defaults()
 
-print("Message SENT")
+        #Writing the response message
+        print("Writing the response: ", message_string)
+        output_message.message_string = message_string
+        connector.send_message(out_queue_name, output_message)
 
-# Reset the MsgId, CorrelId & GroupId so that we can reuse
-# the same 'md' object again.
+        print("Message SENT")
+
+    except pymqi.MQMIError, e:
+        if e.comp == CMQC.MQCC_FAILED and e.reason == CMQC.MQRC_NO_MSG_AVAILABLE:
+            # No messages, that's OK, we can ignore it.
+            connector.close_all_queues()
+            connector.disconnect()
+
+            sys.exit()
+        else:
+            # Some other error condition.
+            raise
+

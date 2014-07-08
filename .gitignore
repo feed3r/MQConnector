@@ -214,3 +214,13 @@ pip-log.txt
 
 #Mr Developer
 .mr.developer.cfg
+.idea/.name
+.idea/encodings.xml
+.idea/misc.xml
+.idea/modules.xml
+.idea/scopes/scope_settings.xml
+.idea/SettlementManager.iml
+.idea/vcs.xml
+.idea/workspace.xml
+output_file_txt
+settlManager.py
